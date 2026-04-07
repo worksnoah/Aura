@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   clearCodeFromUrl,
   exchangeCodeForToken,
@@ -31,8 +31,6 @@ export default function App() {
     "rgb(88, 40, 140)",
     "rgb(18, 28, 54)"
   ]);
-
-  const lyricRefs = useRef([]);
 
   useEffect(() => {
     async function handleAuth() {
@@ -135,22 +133,19 @@ export default function App() {
     return getActiveLyricIndex(lyrics, progressMs);
   }, [lyrics, progressMs]);
 
-  useEffect(() => {
-    const activeLine = lyricRefs.current[activeLyricIndex];
-    if (activeLine) {
-      activeLine.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
-    }
-  }, [activeLyricIndex]);
-
   const styleVars = {
     "--g1": colors[0],
     "--g2": colors[1],
     "--g3": colors[2],
     "--g4": colors[3]
   };
+
+  const lyricLineHeight = 78;
+  const anchorOffset = 156;
+  const lyricsTranslateY =
+    activeLyricIndex >= 0
+      ? `translateY(calc(${anchorOffset}px - ${activeLyricIndex} * ${lyricLineHeight}px))`
+      : "translateY(156px)";
 
   if (loadingAuth) {
     return (
@@ -228,19 +223,38 @@ export default function App() {
             </button>
           </div>
 
-          <div className="lyrics-scroll">
+          <div className="lyrics-viewport">
+            <div className="lyrics-mask-top" />
+            <div className="lyrics-mask-bottom" />
+
             {lyrics.length ? (
-              lyrics.map((line, index) => (
-                <p
-                  key={`${line.timeMs}-${index}`}
-                  ref={(el) => {
-                    lyricRefs.current[index] = el;
-                  }}
-                  className={`lyric-line ${index === activeLyricIndex ? "active" : ""}`}
-                >
-                  {line.text || "♪"}
-                </p>
-              ))
+              <div
+                className="lyrics-track"
+                style={{ transform: lyricsTranslateY }}
+              >
+                {lyrics.map((line, index) => {
+                  const distance = Math.abs(index - activeLyricIndex);
+                  const isActive = index === activeLyricIndex;
+                  const isNext = index === activeLyricIndex + 1;
+                  const isPrev = index === activeLyricIndex - 1;
+
+                  let className = "lyric-line";
+                  if (isActive) className += " active";
+                  else if (isNext) className += " next";
+                  else if (isPrev) className += " prev";
+                  else if (distance === 2) className += " near";
+                  else if (distance >= 3) className += " far";
+
+                  return (
+                    <p
+                      key={`${line.timeMs}-${index}`}
+                      className={className}
+                    >
+                      {line.text || "♪"}
+                    </p>
+                  );
+                })}
+              </div>
             ) : (
               <div className="empty-lyrics">
                 <p>No synced lyrics found for this track.</p>
