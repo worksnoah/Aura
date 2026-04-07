@@ -19,8 +19,8 @@ export default defineConfig({
         background_color: "#09090d",
         display: "fullscreen",
         display_override: ["window-controls-overlay"],
-        start_url: "/ambient-web-music-player/",
-        scope: "/ambient-web-music-player/",
+        start_url: "/aura/",
+        scope: "/aura/",
         icons: [
           {
             src: "pwa-192x192.png",
