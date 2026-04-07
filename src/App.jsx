@@ -161,7 +161,7 @@ export default function App() {
       <div className="app shell-center" style={styleVars}>
         <div className="mesh-bg" />
         <div className="panel-card login-card">
-          <p className="eyebrow">Aura: Web Music Player</p>
+          <p className="eyebrow">Aura: Your music, brought to life</p>
           <h1>Connect Spotify</h1>
           <p className="subtext">
             A fullscreen ambient music experience with live lyrics
