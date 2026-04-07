@@ -270,9 +270,9 @@ button {
     filter 320ms ease;
 }
 
-.lyric-line.prev {
+.lyric-line.past {
   opacity: 0;
-  transform: translateY(-10px) scale(0.98);
+  transform: translateY(-12px) scale(0.98);
   pointer-events: none;
 }
 

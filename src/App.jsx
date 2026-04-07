@@ -230,17 +230,13 @@ export default function App() {
                 style={{ transform: lyricsTranslateY }}
               >
                 {lyrics.map((line, index) => {
-                  const distance = Math.abs(index - activeLyricIndex);
-                  const isActive = index === activeLyricIndex;
-                  const isNext = index === activeLyricIndex + 1;
-                  const isPrev = index === activeLyricIndex - 1;
-
-                  let className = "lyric-line";
-                  if (isActive) className += " active";
-                  else if (isNext) className += " next";
-                  else if (isPrev) className += " prev";
-                  else if (distance === 2) className += " near";
-                  else if (distance >= 3) className += " far";
+                   const offset = index - activeLyricIndex;
+                   let className = "lyric-line";
+                   if (offset === 0) className += " active";
+                   else if (offset === 1) className += " next";
+                   else if (offset === 2) className += " near";
+                   else if (offset < 0) className += " past";
+                   else className += " far";
 
                   return (
                     <p
