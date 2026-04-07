@@ -1,1 +1,254 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  clearCodeFromUrl,
+  exchangeCodeForToken,
+  getAccessToken,
+  getCodeFromUrl,
+  loginWithSpotify,
+  logout
+} from "./lib/auth";
+import { getCurrentlyPlaying } from "./lib/spotify";
+import { fetchLyrics } from "./lib/lrclib";
+import { extractGradientColors } from "./lib/colors";
+import { getActiveLyricIndex, parseSyncedLyrics } from "./lib/lyrics";
 
+function formatTime(ms) {
+  const totalSeconds = Math.floor((ms || 0) / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+export default function App() {
+  const [loadingAuth, setLoadingAuth] = useState(true);
+  const [track, setTrack] = useState(null);
+  const [lyrics, setLyrics] = useState([]);
+  const [progressMs, setProgressMs] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [colors, setColors] = useState([
+    "rgb(34, 20, 64)",
+    "rgb(11, 12, 24)",
+    "rgb(88, 40, 140)",
+    "rgb(18, 28, 54)"
+  ]);
+
+  const lyricRefs = useRef([]);
+
+  useEffect(() => {
+    async function handleAuth() {
+      try {
+        const code = getCodeFromUrl();
+
+        if (code && !getAccessToken()) {
+          await exchangeCodeForToken(code);
+          clearCodeFromUrl();
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoadingAuth(false);
+      }
+    }
+
+    handleAuth();
+  }, []);
+
+  useEffect(() => {
+    if (!getAccessToken()) return;
+
+    let cancelled = false;
+
+    async function loadCurrentTrack() {
+      try {
+        const data = await getCurrentlyPlaying();
+
+        if (!data || !data.item || cancelled) return;
+
+        const nextTrack = {
+          id: data.item.id,
+          name: data.item.name,
+          artist: data.item.artists?.map((artist) => artist.name).join(", "),
+          album: data.item.album?.name,
+          image: data.item.album?.images?.[0]?.url || "",
+          durationMs: data.item.duration_ms
+        };
+
+        setTrack(nextTrack);
+        setProgressMs(data.progress_ms || 0);
+        setIsPlaying(Boolean(data.is_playing));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    loadCurrentTrack();
+    const interval = setInterval(loadCurrentTrack, 5000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [loadingAuth]);
+
+  useEffect(() => {
+    if (!track?.image) return;
+
+    extractGradientColors(track.image).then((nextColors) => {
+      setColors(nextColors);
+    });
+  }, [track?.image]);
+
+  useEffect(() => {
+    if (!track) return;
+
+    async function loadLyrics() {
+      try {
+        const data = await fetchLyrics({
+          trackName: track.name,
+          artistName: track.artist,
+          albumName: track.album,
+          duration: track.durationMs
+        });
+
+        const synced = data?.syncedLyrics || data?.synced_lyrics || "";
+        setLyrics(parseSyncedLyrics(synced));
+      } catch (error) {
+        console.error(error);
+        setLyrics([]);
+      }
+    }
+
+    loadLyrics();
+  }, [track?.id]);
+
+  useEffect(() => {
+    if (!isPlaying || !track?.durationMs) return;
+
+    const timer = setInterval(() => {
+      setProgressMs((prev) => Math.min(prev + 1000, track.durationMs));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isPlaying, track?.durationMs]);
+
+  const activeLyricIndex = useMemo(() => {
+    return getActiveLyricIndex(lyrics, progressMs);
+  }, [lyrics, progressMs]);
+
+  useEffect(() => {
+    const activeLine = lyricRefs.current[activeLyricIndex];
+    if (activeLine) {
+      activeLine.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    }
+  }, [activeLyricIndex]);
+
+  const styleVars = {
+    "--g1": colors[0],
+    "--g2": colors[1],
+    "--g3": colors[2],
+    "--g4": colors[3]
+  };
+
+  if (loadingAuth) {
+    return (
+      <div className="app shell-center" style={styleVars}>
+        <div className="mesh-bg" />
+        <div className="panel-card">Loading Spotify session...</div>
+      </div>
+    );
+  }
+
+  if (!getAccessToken()) {
+    return (
+      <div className="app shell-center" style={styleVars}>
+        <div className="mesh-bg" />
+        <div className="panel-card login-card">
+          <p className="eyebrow">Ambient Web Music Player</p>
+          <h1>Connect Spotify</h1>
+          <p className="subtext">
+            Fullscreen ambient player for your room with synced lyrics and live visuals.
+          </p>
+          <button className="primary-btn" onClick={loginWithSpotify}>
+            Continue with Spotify
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="app" style={styleVars}>
+      <div className="mesh-bg" />
+      <div className="grain" />
+
+      <main className="layout">
+        <section className="left-column">
+          <div className="cover-shell glass">
+            {track?.image ? (
+              <img className="cover-art" src={track.image} alt={track.name} />
+            ) : (
+              <div className="cover-art cover-placeholder">No track playing</div>
+            )}
+          </div>
+
+          <div className="track-card glass">
+            <div className="track-text">
+              <h1>{track?.name || "Nothing playing"}</h1>
+              <p>{track?.artist || "Open Spotify on one of your devices"}</p>
+            </div>
+
+            <div className="progress-block">
+              <div className="progress-bar">
+                <div
+                  className="progress-fill"
+                  style={{
+                    width: track?.durationMs
+                      ? `${(progressMs / track.durationMs) * 100}%`
+                      : "0%"
+                  }}
+                />
+              </div>
+
+              <div className="time-row">
+                <span>{formatTime(progressMs)}</span>
+                <span>{formatTime(track?.durationMs || 0)}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="lyrics-card glass">
+          <div className="lyrics-top">
+            <p className="eyebrow">Live Lyrics</p>
+            <button className="ghost-btn" onClick={logout}>
+              Log out
+            </button>
+          </div>
+
+          <div className="lyrics-scroll">
+            {lyrics.length ? (
+              lyrics.map((line, index) => (
+                <p
+                  key={`${line.timeMs}-${index}`}
+                  ref={(el) => {
+                    lyricRefs.current[index] = el;
+                  }}
+                  className={`lyric-line ${index === activeLyricIndex ? "active" : ""}`}
+                >
+                  {line.text || "♪"}
+                </p>
+              ))
+            ) : (
+              <div className="empty-lyrics">
+                <p>No synced lyrics found for this track.</p>
+              </div>
+            )}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
