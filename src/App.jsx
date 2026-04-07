@@ -224,9 +224,6 @@ export default function App() {
           </div>
 
           <div className="lyrics-viewport">
-            <div className="lyrics-mask-top" />
-            <div className="lyrics-mask-bottom" />
-
             {lyrics.length ? (
               <div
                 className="lyrics-track"
