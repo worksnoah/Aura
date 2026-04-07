@@ -162,7 +162,6 @@ export default function App() {
         <div className="mesh-bg" />
         <div className="panel-card login-card">
           <p className="eyebrow">Aura</p>
-          <h1>Aura</h1>
           <h1>Connect Spotify</h1>
           <p className="subtext">
             An ambient Spotify display with live lyrics.
