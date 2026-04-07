@@ -2,10 +2,10 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-const repoName = "ambient-web-music-player";
+const repoName = "aura";
 
 export default defineConfig({
-  base: "/ambient-web-music-player/",
+  base: "/aura/",
   plugins: [
     react(),
     VitePWA({
