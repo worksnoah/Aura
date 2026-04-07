@@ -17,7 +17,7 @@ export default defineConfig({
         description: "Fullscreen ambient Spotify now-playing display with synced lyrics.",
         theme_color: "#09090d",
         background_color: "#09090d",
-        display: "standalone",
+        display: "fullscreen",
         display_override: ["window-controls-overlay"],
         start_url: "/ambient-web-music-player/",
         scope: "/ambient-web-music-player/",
