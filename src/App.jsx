@@ -164,7 +164,7 @@ export default function App() {
           <p className="eyebrow">Aura</p>
           <h1>Connect Spotify</h1>
           <p className="subtext">
-            An ambient Spotify display with live lyrics.
+            A fullscreen ambient music experience with live lyrics
           </p>
           <button className="primary-btn" onClick={loginWithSpotify}>
             Continue with Spotify
