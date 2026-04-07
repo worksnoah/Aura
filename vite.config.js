@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["apple-touch-icon.png"],
       manifest: {
-        name: "Aura",
-        short_name: "Aura",
+        name: "aura",
+        short_name: "aura",
         description: "Aura - a fullscreen ambient Spotify now-playing display with synced lyrics.",
         theme_color: "#09090d",
         background_color: "#09090d",
