@@ -161,7 +161,11 @@ export default function App() {
       <div className="app shell-center" style={styleVars}>
         <div className="mesh-bg" />
         <div className="panel-card login-card">
-          <p className="eyebrow">Ambient Web Music Player</p>
+          <p className="eyebrow">Aura</p>
+          <h1>Aura</h1>
+            <p className="subtext">
+              An ambient Spotify display with live lyrics
+            </p>
           <h1>Connect Spotify</h1>
           <p className="subtext">
             Fullscreen ambient player for your room with synced lyrics and live visuals.
