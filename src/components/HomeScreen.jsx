@@ -74,9 +74,3 @@ export default function HomeScreen({ weather, auraText, auraStatus }) {
     </main>
   );
 }
-
-<HomeScreen
-  weather={weather}
-  auraText={auraText}
-  auraStatus={auraStatus}
-/>

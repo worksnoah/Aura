@@ -24,10 +24,10 @@ function formatTime(ms) {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-const [auraText, setAuraText] = useState("");
-const [auraStatus, setAuraStatus] = useState("idle");
-
 export default function App() {
+  const [auraText, setAuraText] = useState("");
+  const [auraStatus, setAuraStatus] = useState("idle");
+  
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [track, setTrack] = useState(null);
   const [lyrics, setLyrics] = useState([]);
@@ -285,7 +285,12 @@ export default function App() {
       <div className="grain" />
 
       <div className={`screen-layer ${showMusicScreen ? "hidden" : "visible"}`}>
-        <HomeScreen weather={weather} />
+        <HomeScreen
+          weather={weather}
+          auraText={auraText}
+          auraStatus={auraStatus}
+        />
+        
       </div>
 
       <div className={`screen-layer ${showMusicScreen ? "visible" : "hidden"}`}>
