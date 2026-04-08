@@ -26,6 +26,11 @@ export function startAuraSpeechRecognition({ onTranscript, onStateChange, onErro
 
   recognition.onerror = (event) => {
     onStateChange?.("idle");
+
+    if (event.error === "no-speech") {
+      return;
+    }
+
     onError?.(new Error(event.error || "Speech recognition failed"));
   };
 
