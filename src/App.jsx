@@ -238,7 +238,7 @@ export default function App() {
       <div className="grain" />
 
       <div className={`screen-layer ${showMusicScreen ? "hidden" : "visible"}`}>
-        <HomeScreen key={clockTick} weather={weather} />
+        <HomeScreen weather={weather} />
       </div>
 
       <div className={`screen-layer ${showMusicScreen ? "visible" : "hidden"}`}>

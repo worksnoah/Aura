@@ -26,13 +26,18 @@ export default function HomeScreen({ weather }) {
   });
 
   const line = useMemo(() => {
-    const daySeed = new Date().toDateString();
+    const dayKey = now.toDateString();
+    const hour = now.getHours();
+
     let total = 0;
-    for (let i = 0; i < daySeed.length; i++) {
-      total += daySeed.charCodeAt(i);
+    const seed = `${dayKey}-${hour}`;
+
+    for (let i = 0; i < seed.length; i++) {
+      total += seed.charCodeAt(i);
     }
+
     return motivationalLines[total % motivationalLines.length];
-  }, []);
+  }, [now]);
 
   return (
     <main className="home-screen">
@@ -44,17 +49,12 @@ export default function HomeScreen({ weather }) {
       </section>
 
       <section className="home-weather">
-        {weather ? (
+        {weather && (
           <>
             <p className="home-weather-temp">{Math.round(weather.tempF)}°</p>
             <p className="home-weather-meta">
               {weather.name} · {weather.condition}
             </p>
-          </>
-        ) : (
-          <>
-            <p className="home-weather-temp">--°</p>
-            <p className="home-weather-meta">Weather unavailable</p>
           </>
         )}
       </section>

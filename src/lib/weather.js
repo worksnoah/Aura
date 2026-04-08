@@ -39,10 +39,7 @@ function getCurrentPosition() {
   });
 }
 
-export async function fetchWeather() {
-  const position = await getCurrentPosition();
-  const { latitude, longitude } = position.coords;
-
+async function fetchWeatherForCoords(latitude, longitude, fallbackName = "Your area") {
   const weatherUrl =
     `https://api.open-meteo.com/v1/forecast?latitude=${latitude}` +
     `&longitude=${longitude}` +
@@ -60,15 +57,19 @@ export async function fetchWeather() {
     `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}` +
     `&longitude=${longitude}&language=en&format=json`;
 
-  const geoResponse = await fetch(geoUrl);
-  let placeName = "Your area";
+  let placeName = fallbackName;
 
-  if (geoResponse.ok) {
-    const geoData = await geoResponse.json();
-    const result = geoData?.results?.[0];
-    if (result?.name) {
-      placeName = result.name;
+  try {
+    const geoResponse = await fetch(geoUrl);
+    if (geoResponse.ok) {
+      const geoData = await geoResponse.json();
+      const result = geoData?.results?.[0];
+      if (result?.name) {
+        placeName = result.name;
+      }
     }
+  } catch (error) {
+    console.error("Reverse geocoding failed:", error);
   }
 
   return {
@@ -76,4 +77,18 @@ export async function fetchWeather() {
     condition: getWeatherDescription(weatherData.current.weather_code),
     name: placeName
   };
+}
+
+export async function fetchWeather() {
+  try {
+    const position = await getCurrentPosition();
+    const { latitude, longitude } = position.coords;
+
+    return await fetchWeatherForCoords(latitude, longitude, "Your area");
+  } catch (error) {
+    console.error("Using fallback weather location:", error);
+
+    // West Lafayette fallback
+    return await fetchWeatherForCoords(40.4259, -86.9081, "West Lafayette");
+  }
 }
