@@ -518,3 +518,116 @@ button {
     min-height: 64px;
   }
 }
+
+.screen-layer {
+  position: absolute;
+  inset: 0;
+  transition:
+    opacity 420ms ease,
+    transform 420ms ease,
+    filter 420ms ease;
+}
+
+.screen-layer.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+  filter: blur(0);
+}
+
+.screen-layer.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.015);
+  filter: blur(10px);
+}
+
+.home-screen {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  padding: 48px 52px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.home-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.home-label {
+  margin: 0 0 18px;
+  font-size: 0.8rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.home-time {
+  margin: 0;
+  font-size: clamp(5rem, 13vw, 10rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.98);
+}
+
+.home-date {
+  margin: 18px 0 0;
+  font-size: clamp(1.1rem, 2vw, 1.6rem);
+  color: rgba(255, 255, 255, 0.76);
+  letter-spacing: -0.02em;
+}
+
+.home-line {
+  margin: 34px 0 0;
+  max-width: 700px;
+  font-size: clamp(1.2rem, 2.1vw, 1.8rem);
+  line-height: 1.18;
+  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: -0.03em;
+}
+
+.home-weather {
+  align-self: flex-end;
+  text-align: right;
+}
+
+.home-weather-temp {
+  margin: 0;
+  font-size: clamp(2.6rem, 5vw, 4.6rem);
+  line-height: 1;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.98);
+  letter-spacing: -0.05em;
+}
+
+.home-weather-meta {
+  margin: 8px 0 0;
+  font-size: clamp(1rem, 1.8vw, 1.35rem);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+@media (max-width: 980px) {
+  .home-screen {
+    padding: 32px 26px;
+  }
+
+  .home-time {
+    font-size: clamp(4.2rem, 18vw, 7rem);
+  }
+
+  .home-line {
+    max-width: 100%;
+    font-size: clamp(1rem, 4.5vw, 1.35rem);
+  }
+
+  .home-weather {
+    align-self: flex-start;
+    text-align: left;
+  }
+}

@@ -11,6 +11,9 @@ import { getCurrentlyPlaying } from "./lib/spotify";
 import { fetchLyrics } from "./lib/lrclib";
 import { extractGradientColors } from "./lib/colors";
 import { getActiveLyricIndex, parseSyncedLyrics } from "./lib/lyrics";
+import { fetchWeather } from "./lib/weather";
+import HomeScreen from "./components/HomeScreen";
+import MusicScreen from "./components/MusicScreen";
 
 function formatTime(ms) {
   const totalSeconds = Math.floor((ms || 0) / 1000);
@@ -25,12 +28,14 @@ export default function App() {
   const [lyrics, setLyrics] = useState([]);
   const [progressMs, setProgressMs] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [weather, setWeather] = useState(null);
   const [colors, setColors] = useState([
     "rgb(34, 20, 64)",
     "rgb(11, 12, 24)",
     "rgb(88, 40, 140)",
     "rgb(18, 28, 54)"
   ]);
+  const [clockTick, setClockTick] = useState(0);
 
   useEffect(() => {
     async function handleAuth() {
@@ -52,6 +57,37 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const timer = setInterval(() => {
+      setClockTick((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadWeather() {
+      try {
+        const data = await fetchWeather();
+        if (!cancelled) {
+          setWeather(data);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    loadWeather();
+    const interval = setInterval(loadWeather, 1000 * 60 * 20);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!getAccessToken()) return;
 
     let cancelled = false;
@@ -60,7 +96,11 @@ export default function App() {
       try {
         const data = await getCurrentlyPlaying();
 
-        if (!data || !data.item || cancelled) return;
+        if (!data || !data.item || cancelled) {
+          setTrack(null);
+          setIsPlaying(false);
+          return;
+        }
 
         const nextTrack = {
           id: data.item.id,
@@ -76,6 +116,8 @@ export default function App() {
         setIsPlaying(Boolean(data.is_playing));
       } catch (error) {
         console.error(error);
+        setTrack(null);
+        setIsPlaying(false);
       }
     }
 
@@ -89,7 +131,15 @@ export default function App() {
   }, [loadingAuth]);
 
   useEffect(() => {
-    if (!track?.image) return;
+    if (!track?.image) {
+      setColors([
+        "rgb(34, 20, 64)",
+        "rgb(11, 12, 24)",
+        "rgb(88, 40, 140)",
+        "rgb(18, 28, 54)"
+      ]);
+      return;
+    }
 
     extractGradientColors(track.image).then((nextColors) => {
       setColors(nextColors);
@@ -97,7 +147,10 @@ export default function App() {
   }, [track?.image]);
 
   useEffect(() => {
-    if (!track) return;
+    if (!track) {
+      setLyrics([]);
+      return;
+    }
 
     async function loadLyrics() {
       try {
@@ -133,6 +186,14 @@ export default function App() {
     return getActiveLyricIndex(lyrics, progressMs);
   }, [lyrics, progressMs]);
 
+  const lyricLineHeight = 150;
+  const activeLineTop = 290;
+
+  const lyricsTranslateY =
+    activeLyricIndex >= 0
+      ? `translateY(${activeLineTop - activeLyricIndex * lyricLineHeight}px)`
+      : `translateY(${activeLineTop}px)`;
+
   const styleVars = {
     "--g1": colors[0],
     "--g2": colors[1],
@@ -140,17 +201,11 @@ export default function App() {
     "--g4": colors[3]
   };
 
-  const lyricLineHeight = 150;
-  const activeLineTop = 270; //try 270 or 310
-  const lyricsTranslateY =
-    activeLyricIndex >= 0
-      ? `translateY(${activeLineTop - activeLyricIndex * lyricLineHeight}px)`
-      : `translateY(${activeLineTop}px)`;
-
   if (loadingAuth) {
     return (
       <div className="app shell-center" style={styleVars}>
         <div className="mesh-bg" />
+        <div className="grain" />
         <div className="panel-card">Loading Spotify session...</div>
       </div>
     );
@@ -160,11 +215,12 @@ export default function App() {
     return (
       <div className="app shell-center" style={styleVars}>
         <div className="mesh-bg" />
+        <div className="grain" />
         <div className="panel-card login-card">
-          <p className="eyebrow">Aura: Your music, brought to life</p>
+          <p className="eyebrow">Aura</p>
           <h1>Connect Spotify</h1>
           <p className="subtext">
-            A fullscreen ambient music experience with live lyrics
+            Turn your music into atmosphere.
           </p>
           <button className="primary-btn" onClick={loginWithSpotify}>
             Continue with Spotify
@@ -174,96 +230,28 @@ export default function App() {
     );
   }
 
+  const showMusicScreen = Boolean(track && isPlaying);
+
   return (
     <div className="app" style={styleVars}>
       <div className="mesh-bg" />
       <div className="grain" />
 
-      <div className="logout-zone">
-        <button className="logout-btn" onClick={logout} aria-label="Log out">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M9 6h9v9M18 6L6 18"
-              stroke="black"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+      <div className={`screen-layer ${showMusicScreen ? "hidden" : "visible"}`}>
+        <HomeScreen key={clockTick} weather={weather} />
       </div>
 
-      <main className="layout">
-        <section className="left-column">
-          <div className="cover-shell glass">
-            {track?.image ? (
-              <img className="cover-art" src={track.image} alt={track.name} />
-            ) : (
-              <div className="cover-art cover-placeholder">No track playing</div>
-            )}
-          </div>
-
-          <div className="track-card glass">
-            <div className="track-text">
-              <h1>{track?.name || "Nothing playing"}</h1>
-              <p>{track?.artist || "Open Spotify on one of your devices"}</p>
-            </div>
-
-            <div className="progress-block">
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: track?.durationMs
-                      ? `${(progressMs / track.durationMs) * 100}%`
-                      : "0%"
-                  }}
-                />
-              </div>
-
-              <div className="time-row">
-                <span>{formatTime(progressMs)}</span>
-                <span>{formatTime(track?.durationMs || 0)}</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="lyrics-card">
-          <div className="lyrics-viewport">
-            {lyrics.length ? (
-              <div
-                className="lyrics-track"
-                style={{ transform: lyricsTranslateY }}
-              >
-                {lyrics.map((line, index) => {
-                  const offset = index - activeLyricIndex;
-
-                  let className = "lyric-line";
-                  if (offset === 0) className += " active";
-                  else if (offset === 1) className += " next";
-                  else if (offset === 2) className += " near";
-                  else if (offset < 0) className += " past";
-                  else className += " far";
-
-                  return (
-                    <p
-                      key={`${line.timeMs}-${index}`}
-                      className={className}
-                    >
-                      <span className="lyric-line-inner">{line.text || "♪"}</span>
-                    </p>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="empty-lyrics">
-                <p>No synced lyrics found for this track.</p>
-              </div>
-            )}
-          </div>
-        </section> 
-      </main>
+      <div className={`screen-layer ${showMusicScreen ? "visible" : "hidden"}`}>
+        <MusicScreen
+          track={track}
+          progressMs={progressMs}
+          activeLyricIndex={activeLyricIndex}
+          lyrics={lyrics}
+          lyricsTranslateY={lyricsTranslateY}
+          logout={logout}
+          formatTime={formatTime}
+        />
+      </div>
     </div>
   );
 }
