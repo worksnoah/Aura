@@ -670,3 +670,144 @@ button {
     text-align: left;
   }
 }
+
+.home-aura-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  padding: 0 80px;
+}
+
+.home-aura-overlay {
+  max-width: 720px;
+  text-align: left;
+  pointer-events: none;
+}
+
+.home-aura-status {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.58);
+  letter-spacing: -0.02em;
+}
+
+.home-aura-text {
+  margin: 0;
+  max-width: 760px;
+  font-size: clamp(1.8rem, 2.7vw, 3.1rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.06);
+}
+
+.todo-card {
+  width: min(720px, 100%);
+  pointer-events: auto;
+}
+
+.todo-label {
+  margin: 0 0 18px;
+  font-size: 0.82rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.todo-empty {
+  margin: 0;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: -0.02em;
+}
+
+.todo-items {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.todo-item {
+  display: grid;
+  grid-template-columns: 34px 1fr 28px;
+  align-items: center;
+  column-gap: 16px;
+  min-height: 52px;
+}
+
+.todo-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.todo-check-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: transparent;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.todo-item.completed .todo-check-inner {
+  background: rgba(255, 255, 255, 0.9);
+  transform: scale(1);
+}
+
+.todo-text {
+  margin: 0;
+  font-size: clamp(1.35rem, 2vw, 1.85rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.todo-item.completed .todo-text {
+  opacity: 0.42;
+  text-decoration: line-through;
+}
+
+.todo-remove {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 1.35rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.todo-remove:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+@media (max-width: 980px) {
+  .home-aura-center {
+    padding: 0 28px;
+  }
+
+  .home-aura-text {
+    font-size: clamp(1.4rem, 5vw, 2rem);
+  }
+
+  .todo-text {
+    font-size: clamp(1.05rem, 4vw, 1.4rem);
+  }
+
+  .todo-item {
+    grid-template-columns: 30px 1fr 24px;
+    column-gap: 12px;
+  }
+}

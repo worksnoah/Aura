@@ -16,6 +16,17 @@ import HomeScreen from "./components/HomeScreen";
 import MusicScreen from "./components/MusicScreen";
 import { startAuraSpeechRecognition } from "./lib/auraVoice";
 import { askAura } from "./lib/auraAssistant";
+import {
+  loadTodos,
+  saveTodos,
+  addTodo,
+  clearTodos,
+  toggleTodoComplete,
+  removeTodoById,
+  removeTodoByText,
+  completeTodoByText,
+  parseTodoCommand
+} from "./lib/todoManager";
 
 function formatTime(ms) {
   const totalSeconds = Math.floor((ms || 0) / 1000);
@@ -34,6 +45,7 @@ export default function App() {
   const [progressMs, setProgressMs] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [weather, setWeather] = useState(null);
+  const [todos, setTodos] = useState([]);
   const [colors, setColors] = useState([
     "rgb(34, 20, 64)",
     "rgb(11, 12, 24)",
@@ -41,6 +53,24 @@ export default function App() {
     "rgb(18, 28, 54)"
   ]);
   const [clockTick, setClockTick] = useState(0);
+
+  useEffect(() => {
+    setTodos(loadTodos());
+  }, []);
+
+  useEffect(() => {
+    saveTodos(todos);
+  }, [todos]);
+
+  useEffect(() => {
+  if (!auraText) return;
+
+    const timer = setTimeout(() => {
+      setAuraText("");
+    }, 7000);
+
+    return () => clearTimeout(timer);
+  }, [auraText]);
 
   useEffect(() => {
   function handleKeyDown(event) {
@@ -59,16 +89,47 @@ export default function App() {
         onStateChange: (state) => {
           setAuraStatus(state);
         },
+
         onTranscript: async (transcript) => {
           try {
-            setAuraStatus("thinking");
-            const text = await askAura(transcript);
-            setAuraText(text);
-          } catch (error) {
-            console.error(error);
-            setAuraText("Sorry, something went wrong.");
-          } finally {
+            const command = parseTodoCommand(transcript);
+
+          if (command.type === "add" && command.value) {
+           setTodos((prev) => addTodo(prev, command.value));
+            setAuraText(`Added "${command.value}".`);
             setAuraStatus("idle");
+            return;
+          }
+
+          if (command.type === "remove" && command.value) {
+           setTodos((prev) => removeTodoByText(prev, command.value));
+            setAuraText(`Removed "${command.value}".`);
+            setAuraStatus("idle");
+            return;
+          }
+
+          if (command.type === "complete" && command.value) {
+            setTodos((prev) => completeTodoByText(prev, command.value));
+            setAuraText(`Crossed off "${command.value}".`);
+            setAuraStatus("idle");
+            return;
+          }
+
+          if (command.type === "clear") {
+            setTodos(clearTodos());
+            setAuraText("Cleared your to-do list.");
+            setAuraStatus("idle");
+            return;
+          }
+
+          setAuraStatus("thinking");
+          const text = await askAura(transcript);
+          setAuraText(text);
+          } catch (error) {
+          console.error(error);
+          setAuraText("Sorry, something went wrong.");
+          } finally {
+          setAuraStatus("idle");
           }
         },
         onError: (error) => {
@@ -289,6 +350,13 @@ export default function App() {
           weather={weather}
           auraText={auraText}
           auraStatus={auraStatus}
+          todos={todos}
+          onToggleTodo={(id) => {
+            setTodos((prev) => toggleTodoComplete(prev, id));
+          }}
+          onRemoveTodo={(id) => {
+            setTodos((prev) => removeTodoById(prev, id));
+          }}
         />
         
       </div>

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import TodoList from "./TodoList";
 
 const motivationalLines = [
   "Stay locked in.",
@@ -11,7 +12,14 @@ const motivationalLines = [
   "Create the atmosphere you want to live in."
 ];
 
-export default function HomeScreen({ weather, auraText, auraStatus }) {
+export default function HomeScreen({
+  weather,
+  auraText,
+  auraStatus,
+  todos,
+  onToggleTodo,
+  onRemoveTodo
+}) {
   const now = new Date();
 
   const timeString = now.toLocaleTimeString([], {
@@ -39,6 +47,8 @@ export default function HomeScreen({ weather, auraText, auraStatus }) {
     return motivationalLines[total % motivationalLines.length];
   }, [now]);
 
+  const showAuraOverlay = auraStatus === "listening" || auraStatus === "thinking" || Boolean(auraText);
+
   return (
     <main className="home-screen">
       <section className="home-main">
@@ -49,18 +59,31 @@ export default function HomeScreen({ weather, auraText, auraStatus }) {
       </section>
 
       <section className="home-aura-center">
-        {auraStatus === "listening" && (
-          <p className="home-aura-status">Listening…</p>
+        {!showAuraOverlay && (
+          <TodoList
+            todos={todos}
+            onToggle={onToggleTodo}
+            onRemove={onRemoveTodo}
+          />
         )}
 
-        {auraStatus === "thinking" && (
-          <p className="home-aura-status">Thinking…</p>
-        )}
+        {showAuraOverlay && (
+          <div className="home-aura-overlay">
+            {auraStatus === "listening" && (
+              <p className="home-aura-status">Listening…</p>
+            )}
 
-        {auraText && (
-          <p className="home-aura-text">{auraText}</p>
+            {auraStatus === "thinking" && (
+              <p className="home-aura-status">Thinking…</p>
+            )}
+
+            {auraText && (
+              <p className="home-aura-text">{auraText}</p>
+            )}
+          </div>
         )}
       </section>
+
       <section className="home-weather">
         {weather && (
           <>
