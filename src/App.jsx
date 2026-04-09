@@ -67,7 +67,7 @@ export default function App() {
 
     const timer = setTimeout(() => {
       setAuraText("");
-    }, 7000);
+    }, 5000);
 
     return () => clearTimeout(timer);
   }, [auraText]);

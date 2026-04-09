@@ -47,11 +47,14 @@ export default function HomeScreen({
     return motivationalLines[total % motivationalLines.length];
   }, [now]);
 
-  const showAuraOverlay = auraStatus === "listening" || auraStatus === "thinking" || Boolean(auraText);
+  const showAuraOverlay =
+    auraStatus === "listening" ||
+    auraStatus === "thinking" ||
+    Boolean(auraText);
 
   return (
     <main className="home-screen">
-      <section className="home-main">
+      <section className={`home-main ${showAuraOverlay ? "home-content-blurred" : ""}`}>
         <p className="home-label">Aura</p>
         <h1 className="home-time">{timeString}</h1>
         <p className="home-date">{dateString}</p>
@@ -68,7 +71,7 @@ export default function HomeScreen({
         )}
 
         {showAuraOverlay && (
-          <div className="home-aura-overlay">
+          <div className={`home-aura-overlay aura-overlay-${auraStatus}`}>
             {auraStatus === "listening" && (
               <p className="home-aura-status">Listening…</p>
             )}
@@ -84,7 +87,7 @@ export default function HomeScreen({
         )}
       </section>
 
-      <section className="home-weather">
+      <section className={`home-weather ${showAuraOverlay ? "home-content-blurred" : ""}`}>
         {weather && (
           <>
             <p className="home-weather-temp">{Math.round(weather.tempF)}°</p>

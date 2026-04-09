@@ -77,11 +77,9 @@ export function parseTodoCommand(transcript) {
   ];
 
   for (const prefix of addPatterns) {
-    if (lower.startsWith(prefix)) {
-      return {
-        type: "add",
-        value: input.slice(prefix.length).trim()
-      };
+    if (lower.includes("add")) {
+      const value = input.split("add")[1]?.trim();
+      if (value) return { type: "add", value };
     }
   }
 
