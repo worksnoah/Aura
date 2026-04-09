@@ -64,54 +64,67 @@ export function completeTodoByText(todos, text) {
 
 export function parseTodoCommand(transcript) {
   const input = transcript.trim();
-  const lower = input.toLowerCase();
+  const lower = input.toLowerCase().replace(/\s+/g, " ").trim();
 
-  if (lower === "clear my to do list" || lower === "clear my to-do list" || lower === "clear my todo list") {
+  const stripTaskNoise = (text) => {
+    return text
+      .replace(/^(that |this )/i, "")
+      .replace(/^(a |an )/i, "")
+      .replace(/\b(to my to do list|to my todo list|on my to do list|on my todo list)$/i, "")
+      .replace(/\b(for my to do list|for my todo list)$/i, "")
+      .replace(/\bplease$/i, "")
+      .replace(/^(do |go |remember to )/i, "")
+      .trim();
+  };
+
+  const matchAfterAny = (patterns) => {
+    for (const pattern of patterns) {
+      const match = lower.match(pattern);
+      if (match?.[1]) {
+        return stripTaskNoise(match[1]);
+      }
+    }
+    return "";
+  };
+
+  if (
+    /^clear( my)? (to do|to-do|todo) list$/.test(lower) ||
+    /^clear everything$/.test(lower) ||
+    /^clear all tasks$/.test(lower)
+  ) {
     return { type: "clear" };
   }
 
-  const addPatterns = [
-    "add ",
-    "put ",
-    "remind me to "
-  ];
+  const addValue = matchAfterAny([
+    /^(?:add|put)\s+(.+)$/i,
+    /^(?:add|put)\s+(.+?)\s+(?:to|on)\s+my\s+(?:to do|to-do|todo)\s+list$/i,
+    /^remind me to\s+(.+)$/i,
+    /^remember to\s+(.+)$/i
+  ]);
 
-  for (const prefix of addPatterns) {
-    if (lower.includes("add")) {
-      const value = input.split("add")[1]?.trim();
-      if (value) return { type: "add", value };
-    }
+  if (addValue) {
+    return { type: "add", value: addValue };
   }
 
-  const removePatterns = [
-    "remove ",
-    "delete ",
-    "take off "
-  ];
+  const removeValue = matchAfterAny([
+    /^(?:remove|delete|take off)\s+(.+)$/i,
+    /^(?:remove|delete)\s+(.+?)\s+from\s+my\s+(?:to do|to-do|todo)\s+list$/i
+  ]);
 
-  for (const prefix of removePatterns) {
-    if (lower.startsWith(prefix)) {
-      return {
-        type: "remove",
-        value: input.slice(prefix.length).trim()
-      };
-    }
+  if (removeValue) {
+    return { type: "remove", value: removeValue };
   }
 
-  const completePatterns = [
-    "cross off ",
-    "complete ",
-    "finish ",
-    "mark done "
-  ];
+  const completeValue = matchAfterAny([
+    /^(?:complete|finish|cross off)\s+(.+)$/i,
+    /^mark\s+(.+?)\s+as\s+done$/i,
+    /^mark\s+(.+?)\s+done$/i,
+    /^i finished\s+(.+)$/i,
+    /^i did\s+(.+)$/i
+  ]);
 
-  for (const prefix of completePatterns) {
-    if (lower.startsWith(prefix)) {
-      return {
-        type: "complete",
-        value: input.slice(prefix.length).trim()
-      };
-    }
+  if (completeValue) {
+    return { type: "complete", value: completeValue };
   }
 
   return { type: "none" };

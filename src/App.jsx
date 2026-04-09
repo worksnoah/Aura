@@ -85,53 +85,83 @@ export default function App() {
         return;
       }
 
+      setAuraStatus("listening");
+
       startAuraSpeechRecognition({
         onStateChange: (state) => {
           setAuraStatus(state);
         },
 
         onTranscript: async (transcript) => {
-          try {
-            const command = parseTodoCommand(transcript);
+  try {
+    const command = parseTodoCommand(transcript);
 
-          if (command.type === "add" && command.value) {
-           setTodos((prev) => addTodo(prev, command.value));
-            setAuraText(`Added "${command.value}".`);
-            setAuraStatus("idle");
-            return;
-          }
+    if (command.type === "add" && command.value) {
+      setTodos((prev) => {
+        const next = addTodo(prev, command.value);
+        return next;
+      });
+      setAuraText(`Added "${command.value}".`);
+      setAuraStatus("idle");
+      return;
+    }
 
-          if (command.type === "remove" && command.value) {
-           setTodos((prev) => removeTodoByText(prev, command.value));
-            setAuraText(`Removed "${command.value}".`);
-            setAuraStatus("idle");
-            return;
-          }
+    if (command.type === "remove" && command.value) {
+      let removed = false;
 
-          if (command.type === "complete" && command.value) {
-            setTodos((prev) => completeTodoByText(prev, command.value));
-            setAuraText(`Crossed off "${command.value}".`);
-            setAuraStatus("idle");
-            return;
-          }
+      setTodos((prev) => {
+        const next = removeTodoByText(prev, command.value);
+        removed = next.length !== prev.length;
+        return next;
+      });
 
-          if (command.type === "clear") {
-            setTodos(clearTodos());
-            setAuraText("Cleared your to-do list.");
-            setAuraStatus("idle");
-            return;
-          }
+      setAuraText(
+        removed
+          ? `Removed "${command.value}".`
+          : `Couldn't find "${command.value}".`
+      );
+      setAuraStatus("idle");
+      return;
+    }
 
-          setAuraStatus("thinking");
-          const text = await askAura(transcript);
-          setAuraText(text);
-          } catch (error) {
-          console.error(error);
-          setAuraText("Sorry, something went wrong.");
-          } finally {
-          setAuraStatus("idle");
-          }
-        },
+    if (command.type === "complete" && command.value) {
+      let completed = false;
+
+      setTodos((prev) => {
+        const next = completeTodoByText(prev, command.value);
+        completed = next.some(
+          (todo, index) =>
+            todo.completed && !prev[index]?.completed && todo.text === prev[index]?.text
+        );
+        return next;
+      });
+
+      setAuraText(
+        completed
+          ? `Crossed off "${command.value}".`
+          : `Couldn't find "${command.value}".`
+      );
+      setAuraStatus("idle");
+      return;
+    }
+
+    if (command.type === "clear") {
+      setTodos(clearTodos());
+      setAuraText("Cleared your to-do list.");
+      setAuraStatus("idle");
+      return;
+    }
+
+    setAuraStatus("thinking");
+    const text = await askAura(transcript);
+    setAuraText(text);
+  } catch (error) {
+    console.error(error);
+    setAuraText("Something went wrong.");
+  } finally {
+    setAuraStatus("idle");
+  }
+},
         onError: (error) => {
           console.error(error);
           setAuraStatus("idle");
