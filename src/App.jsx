@@ -65,9 +65,15 @@ export default function App() {
   useEffect(() => {
   if (!auraText) return;
 
-    const timer = setTimeout(() => {
-      setAuraText("");
-    }, 5000);
+    const wordCount = auraText.split(" ").length;
+    // base time + reading time
+  const duration = Math.min(
+    10000, // max 10s
+    2500 + wordCount * 180 // ~180ms per word
+  );
+  const timer = setTimeout(() => {
+    setAuraText("");
+  }, duration);
 
     return () => clearTimeout(timer);
   }, [auraText]);
@@ -95,6 +101,22 @@ export default function App() {
         onTranscript: async (transcript) => {
   try {
     const command = parseTodoCommand(transcript);
+
+    const lower = transcript.trim().toLowerCase();
+
+const wantsDismiss =
+  lower === "dismiss" ||
+  lower === "dismissed" ||
+  lower === "close" ||
+  lower === "clear" ||
+  lower === "hide that" ||
+  lower === "hide response";
+
+if (auraText && wantsDismiss) {
+  setAuraText("");
+  setAuraStatus("idle");
+  return;
+}
 
     if (command.type === "add" && command.value) {
       setTodos((prev) => {
