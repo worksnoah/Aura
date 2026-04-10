@@ -576,6 +576,15 @@ button {
   align-items: flex-start;
 }
 
+.home-main,
+.home-weather,
+.todo-card {
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease;
+  will-change: opacity, transform;
+}
+
 .home-label {
   margin: 0 0 18px;
   font-size: 0.8rem;
@@ -661,8 +670,12 @@ button {
 }
 
 .home-content-blurred {
-  filter: blur(18px);
-  opacity: 0.22;
+  opacity: 0.18;
+  transform: scale(1.01);
+}
+
+.home-content-dimmed {
+  opacity: 0.18;
   transform: scale(1.01);
 }
 
@@ -672,19 +685,28 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
   padding: 0 80px;
-  transform: translateY(36px);
-  z-index: 5;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.home-aura-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  transition: opacity 260ms ease;
 }
 
 .home-aura-overlay {
+  position: relative;
+  z-index: 2;
   max-width: 820px;
-  text-align: left;
-  pointer-events: none;
   opacity: 0;
-  transform: translateY(18px) scale(0.985);
-  animation: auraOverlayIn 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform: translateY(16px);
+  animation: auraTextIn 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .home-aura-status {
@@ -694,6 +716,10 @@ button {
   letter-spacing: -0.02em;
   color: rgba(255, 255, 255, 0.58);
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.08);
+}
+
+.home-aura-center.active .home-aura-backdrop {
+  opacity: 1;
 }
 
 .home-aura-text {
@@ -706,14 +732,24 @@ button {
   color: rgba(255, 255, 255, 0.985);
   text-wrap: balance;
   text-shadow:
-    0 0 18px rgba(255, 255, 255, 0.12),
-    0 0 42px rgba(255, 255, 255, 0.08),
-    0 0 88px rgba(255, 255, 255, 0.06);
+    0 0 10px rgba(255, 255, 255, 0.08),
+    0 0 24px rgba(255, 255, 255, 0.05);
 }
 
 .aura-overlay-listening .home-aura-status,
 .aura-overlay-thinking .home-aura-status {
   animation: auraPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes auraTextIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes auraOverlayIn {
@@ -750,8 +786,7 @@ button {
   }
 
   .home-content-blurred {
-    filter: blur(12px);
-    opacity: 0.2;
+    opacity: 0.18;
   }
 
   .home-aura-text {

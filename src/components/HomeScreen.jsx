@@ -48,55 +48,55 @@ export default function HomeScreen({
   }, [now]);
 
   const showAuraOverlay =
-    auraStatus === "listening" ||
-    auraStatus === "thinking" ||
-    Boolean(auraText);
+  auraStatus === "listening" ||
+  auraStatus === "thinking" ||
+  Boolean(auraText);
 
-  return (
-    <main className="home-screen">
-      <section className={`home-main ${showAuraOverlay ? "home-content-blurred" : ""}`}>
-        <p className="home-label">Aura</p>
-        <h1 className="home-time">{timeString}</h1>
-        <p className="home-date">{dateString}</p>
-        <p className="home-line">{line}</p>
-      </section>
+return (
+  <main className="home-screen">
+    <section className={`home-main ${showAuraOverlay ? "home-content-dimmed" : ""}`}>
+      <p className="home-label">Aura</p>
+      <h1 className="home-time">{timeString}</h1>
+      <p className="home-date">{dateString}</p>
+      <p className="home-line">{line}</p>
+    </section>
 
-      <section className="home-aura-center">
-        {!showAuraOverlay && (
-          <TodoList
-            todos={todos}
-            onToggle={onToggleTodo}
-            onRemove={onRemoveTodo}
-          />
-        )}
+    <section className={`home-aura-center ${showAuraOverlay ? "active" : ""}`}>
+      {showAuraOverlay && <div className="home-aura-backdrop" />}
 
-        {showAuraOverlay && (
-          <div className={`home-aura-overlay aura-overlay-${auraStatus}`}>
-            {auraStatus === "listening" && (
-              <p className="home-aura-status">Listening…</p>
-            )}
+      {!showAuraOverlay && (
+        <TodoList
+          todos={todos}
+          onToggle={onToggleTodo}
+          onRemove={onRemoveTodo}
+        />
+      )}
 
-            {auraStatus === "thinking" && (
-              <p className="home-aura-status">Thinking…</p>
-            )}
+      {showAuraOverlay && (
+        <div className="home-aura-overlay">
+          {auraStatus === "listening" && (
+            <p className="home-aura-status">Listening…</p>
+          )}
 
-            {auraText && (
-              <p className="home-aura-text">{auraText}</p>
-            )}
-          </div>
-        )}
-      </section>
+          {auraStatus === "thinking" && (
+            <p className="home-aura-status">Thinking…</p>
+          )}
 
-      <section className={`home-weather ${showAuraOverlay ? "home-content-blurred" : ""}`}>
-        {weather && (
-          <>
-            <p className="home-weather-temp">{Math.round(weather.tempF)}°</p>
-            <p className="home-weather-meta">
-              {weather.name} · {weather.condition}
-            </p>
-          </>
-        )}
-      </section>
-    </main>
+          {auraText && <p className="home-aura-text">{auraText}</p>}
+        </div>
+      )}
+    </section>
+
+    <section className={`home-weather ${showAuraOverlay ? "home-content-dimmed" : ""}`}>
+      {weather && (
+        <>
+          <p className="home-weather-temp">{Math.round(weather.tempF)}°</p>
+          <p className="home-weather-meta">
+            {weather.name} · {weather.condition}
+          </p>
+        </>
+      )}
+    </section>
+  </main>
   );
 }
